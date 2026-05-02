@@ -97,7 +97,7 @@
         .sidebar-header { padding: 0 32px 32px; }
         .logo {
             font-size: 1.8rem; font-weight: 600; letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #fff 0%, #88aaff) 100%;
+            background: linear-gradient(135deg, #fff 0%, #88aaff 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             margin-bottom: 4px;
         }
@@ -160,7 +160,7 @@
             </div>
 
             <div class="private-section" id="private-links">
-                <div class="section-label">Private / Admin</div>
+                <div class="section-label">Modeling Community</div>
                 <nav class="explorer-list" id="private-list"></nav>
             </div>
 
@@ -200,33 +200,6 @@
         }
 ];
         /* [[SERVICES_DATA_END]] */
-        const servicesData = [
-        {
-                "id": "home",
-                "name": "Home",
-                "url": "https://dencat.dev",
-                "path": "/root",
-                "category": "public",
-                "description": "The Digital Garden Portal"
-        },
-        {
-                "id": "invite",
-                "name": "Invite System",
-                "url": "https://modeling-community.dencat.dev",
-                "path": "/discord-join",
-                "category": "private",
-                "description": "Discord Invite Issuance for Modeling Community"
-        },
-        {
-                "id": "git",
-                "name": "Community Git",
-                "url": "https://portal.dencat.dev",
-                "path": "/portal",
-                "category": "private",
-                "description": "Modeling Community Participant Repository (Gitea)"
-        }
-];
-        
 
         const effectMap = {
             1: 'snow', 2: 'snow', 12: 'snow',
@@ -238,6 +211,10 @@
         function renderServices() {
             const publicList = document.getElementById('public-list');
             const privateList = document.getElementById('private-list');
+            
+            // Clear existing list to prevent duplicates
+            publicList.innerHTML = '';
+            privateList.innerHTML = '';
             
             servicesData.forEach(service => {
                 const item = document.createElement('a');

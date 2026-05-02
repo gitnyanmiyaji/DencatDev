@@ -4,3 +4,9 @@ node_modules/
 __pycache__/
 *.png
 !assets/favicon.png
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

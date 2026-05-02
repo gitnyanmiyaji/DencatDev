@@ -31,7 +31,32 @@
 
         /* --- Background Layers --- */
         .bg-base { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #1a1c2c 0%, #05070a 100%); z-index: -3; }
-        .bg-image { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; filter: grayscale(20%) brightness(0.6); z-index: -2; transition: opacity 1.5s ease-in-out, transform 0.5s ease-out; }
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            filter: brightness(1.1); /* Base brightness is higher */
+            z-index: -2;
+            transition: opacity 1.5s ease-in-out, transform 0.5s ease-out;
+        }
+
+        /* Vignette Layer */
+        .bg-vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0) 20%, rgba(0,0,0,0.7) 100%);
+            z-index: -1.5;
+            pointer-events: none;
+        }
+
         .bg-effect { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
 
         .particle { position: absolute; pointer-events: none; animation: fall linear infinite; }
@@ -142,6 +167,7 @@
 <body>
     <div class="bg-base"></div>
     <div class="bg-image" id="bgImage"></div>
+    <div class="bg-vignette"></div>
     <div class="bg-effect" id="bgEffect"></div>
 
     <aside class="sidebar">
@@ -254,7 +280,7 @@
             bgImg.onload = () => {
                 const el = document.getElementById('bgImage');
                 el.style.backgroundImage = `url('${bgUrl}')`;
-                el.style.opacity = '0.25';
+                el.style.opacity = '0.45'; /* Higher opacity for focus */
             };
             
             const container = document.getElementById('bgEffect');

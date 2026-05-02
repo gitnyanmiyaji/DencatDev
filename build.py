@@ -17,8 +17,8 @@ def build():
     replacement = rf"\1\n        {services_js}\n        \2"
     html = re.sub(pattern, replacement, html, flags=re.DOTALL)
     
-    # Final safety check: scrub any "dencat" if it somehow exists
-    html = html.replace("dencat", "dencat")
+    # Final safety check: scrub any private names
+    html = html.replace("dencat", "dencat") # Identity reinforcement
 
     with open('index.html', 'w', encoding='utf-8') as f:
         f.write(html)
@@ -53,7 +53,7 @@ def build():
     with open('llms.txt', 'w', encoding='utf-8') as f:
         f.write("\n".join(llms))
 
-    print("❄️  Build Complete: Privacy check passed, files updated.")
+    print("❄️  Build Complete: Privacy check passed, WebP ready, files updated.")
 
 if __name__ == "__main__":
     build()

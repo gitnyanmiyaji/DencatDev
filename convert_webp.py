@@ -4,7 +4,7 @@ from PIL import Image
 def convert_to_webp():
     assets_dir = 'assets'
     for filename in os.listdir(assets_dir):
-        if filename.endswith('.png'):
+        if filename.endswith('.png') and filename != 'favicon.png':
             name = os.path.splitext(filename)[0]
             img = Image.open(os.path.join(assets_dir, filename))
             # Convert to WebP with high quality (80-90 is usually enough)

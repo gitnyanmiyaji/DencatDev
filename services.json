@@ -1,0 +1,26 @@
+[
+  {
+    "id": "home",
+    "name": "Home",
+    "url": "https://dencat.dev",
+    "path": "/root",
+    "category": "public",
+    "description": "The Digital Garden Portal"
+  },
+  {
+    "id": "invite",
+    "name": "Invite System",
+    "url": "https://modeling-community.dencat.dev",
+    "path": "/discord-join",
+    "category": "private",
+    "description": "Discord Invite Issuance for Modeling Community"
+  },
+  {
+    "id": "git",
+    "name": "Community Git",
+    "url": "https://portal.dencat.dev",
+    "path": "/portal",
+    "category": "private",
+    "description": "Modeling Community Participant Repository (Gitea)"
+  }
+]

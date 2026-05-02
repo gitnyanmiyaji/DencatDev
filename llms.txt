@@ -1,0 +1,19 @@
+# dencat.dev - The Digital Garden of dencat
+
+> [!NOTE]
+> This is a machine-readable summary of the dencat.dev portal.
+
+## Overview
+dencat.dev is the primary public entry point for dencat's self-hosted services and projects.
+
+## Core Services
+- **Home** (Public): [https://dencat.dev](https://dencat.dev) - The Digital Garden Portal
+- **Invite System** (Private): [https://modeling-community.dencat.dev](https://modeling-community.dencat.dev) - Discord Invite Issuance for Modeling Community
+- **Community Git** (Private): [https://portal.dencat.dev](https://portal.dencat.dev) - Modeling Community Participant Repository (Gitea)
+
+## About the Owner
+- **Name**: dencat
+- **Focus**: AI agents, VR, and self-hosting.
+
+## AI Policy
+This domain is AI-friendly. Agents are encouraged to use this file to understand the context of the services provided here.

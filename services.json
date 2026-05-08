@@ -30,5 +30,13 @@
     "path": "/trivia",
     "category": "private",
     "description": "Personal AI Assistant & Knowledge Base (Restricted Access)"
+  },
+  {
+    "id": "blog",
+    "name": "Dev Blog",
+    "url": "https://blog.dencat.dev",
+    "path": "/blog",
+    "category": "public",
+    "description": "Development Log & Technical Articles"
   }
 ]

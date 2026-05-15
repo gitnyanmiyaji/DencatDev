@@ -17,11 +17,11 @@
   },
   {
     "id": "git",
-    "name": "Community Git",
-    "url": "https://portal.dencat.dev",
-    "path": "/portal",
+    "name": "Canyon Portal",
+    "url": "https://gitnyanmiyaji.github.io/canyon-portal/",
+    "path": "/canyon-portal",
     "category": "private",
-    "description": "Modeling Community Participant Repository (Gitea)"
+    "description": "Modeling Community Onboarding & Git Access"
   },
   {
     "id": "trivia",

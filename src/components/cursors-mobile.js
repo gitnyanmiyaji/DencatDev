@@ -1,14 +1,15 @@
-export class CursorsComponent {
+export class CursorsMobileComponent {
     constructor() {
         this.ws = null;
         this.otherCursors = new Map(); // id -> { x, y, targetX, targetY, trail: [] }
         this.canvas = null;
         this.ctx = null;
         this.lastSent = 0;
-        this.sendInterval = 40; // 40ms interval (25fps)
+        this.sendInterval = 50; // 50ms interval (20fps) for mobile efficiency
         this.reconnectTimeout = null;
-        this.myCursor = { x: 0, y: 0, targetX: 0, targetY: 0, trail: [], color: this.getRandomColor() };
+        this.myCursor = { x: 0, y: 0, targetX: 0, targetY: 0, trail: [], color: this.getRandomColor(), opacity: 0.0 };
         this.hasMoved = false;
+        this.touchActive = false;
         this.isAnimating = false;
         this.animationFrameId = null;
     }
@@ -32,7 +33,7 @@ export class CursorsComponent {
         window.addEventListener('resize', () => this.resizeCanvas());
 
         this.connect();
-        this.initMouseListener();
+        this.initTouchListeners();
         this.triggerAnimation(); // Trigger initial loop to clear/setup
     }
 
@@ -48,7 +49,7 @@ export class CursorsComponent {
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const wsUrl = isLocal ? 'ws://localhost:8787/cursors' : 'wss://b.dencat.dev/cursors';
 
-        console.log(`Connecting to Cursors WebSocket at: ${wsUrl}`);
+        console.log(`Connecting to Mobile Cursors WebSocket at: ${wsUrl}`);
         this.ws = new WebSocket(wsUrl);
 
         this.ws.onmessage = (e) => {
@@ -85,14 +86,14 @@ export class CursorsComponent {
         };
 
         this.ws.onclose = () => {
-            console.log('Cursors WebSocket disconnected. Reconnecting...');
+            console.log('Mobile Cursors WebSocket disconnected. Reconnecting...');
             this.ws = null;
             if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
             this.reconnectTimeout = setTimeout(() => this.connect(), 3000);
         };
 
         this.ws.onerror = (err) => {
-            console.error('Cursors WebSocket error:', err);
+            console.error('Mobile Cursors WebSocket error:', err);
         };
     }
 
@@ -116,32 +117,60 @@ export class CursorsComponent {
         return colors[Math.floor(Math.random() * colors.length)];
     }
 
-    initMouseListener() {
-        document.addEventListener('mousemove', (e) => {
-            // Update local cursor targets immediately (unthrottled for smooth local rendering)
-            this.myCursor.targetX = e.clientX;
-            this.myCursor.targetY = e.clientY;
+    initTouchListeners() {
+        const handleStart = (e) => {
+            if (e.touches.length === 0) return;
+            this.touchActive = true;
+            this.myCursor.opacity = 1.0;
+            
+            const touch = e.touches[0];
+            this.myCursor.targetX = touch.clientX;
+            this.myCursor.targetY = touch.clientY;
+            
             if (!this.hasMoved) {
-                this.myCursor.x = e.clientX;
-                this.myCursor.y = e.clientY;
+                this.myCursor.x = touch.clientX;
+                this.myCursor.y = touch.clientY;
                 this.hasMoved = true;
             }
+            this.triggerAnimation();
+        };
+
+        const handleMove = (e) => {
+            if (e.touches.length === 0) return;
+            this.touchActive = true;
+            this.myCursor.opacity = 1.0;
+
+            const touch = e.touches[0];
+            this.myCursor.targetX = touch.clientX;
+            this.myCursor.targetY = touch.clientY;
             this.triggerAnimation();
 
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
 
             const now = Date.now();
             if (now - this.lastSent > this.sendInterval) {
-                const x = e.clientX / window.innerWidth;
-                const y = e.clientY / window.innerHeight;
+                const x = touch.clientX / window.innerWidth;
+                const y = touch.clientY / window.innerHeight;
 
                 this.ws.send(JSON.stringify({ x, y }));
                 this.lastSent = now;
             }
-        });
+        };
+
+        const handleEnd = () => {
+            this.touchActive = false;
+        };
+
+        document.addEventListener('touchstart', handleStart, { passive: true });
+        document.addEventListener('touchmove', handleMove, { passive: true });
+        document.addEventListener('touchend', handleEnd, { passive: true });
+        document.addEventListener('touchcancel', handleEnd, { passive: true });
     }
 
     drawCursor(cursor) {
+        const opacity = cursor.opacity !== undefined ? cursor.opacity : 1.0;
+        if (opacity <= 0.01) return;
+
         // Smooth interpolation (lerp) from current pos to target pos
         const dx = cursor.targetX - cursor.x;
         const dy = cursor.targetY - cursor.y;
@@ -153,8 +182,10 @@ export class CursorsComponent {
             cursor.y += dy * 0.15;
         }
 
-        // Add to trail
-        cursor.trail.push({ x: cursor.x, y: cursor.y, age: 0 });
+        // Add to trail (only if touch active or trail isn't fading out completely)
+        if (opacity > 0.1) {
+            cursor.trail.push({ x: cursor.x, y: cursor.y, age: 0 });
+        }
 
         // Draw trail with dynamic tapering (comet tail)
         if (cursor.trail.length > 1) {
@@ -172,8 +203,8 @@ export class CursorsComponent {
                 // Width: tapers from 8px (near head) down to 1px (near tail)
                 this.ctx.lineWidth = 1 + progress * 7;
 
-                // Alpha: fades out towards the tail (oldest points)
-                const alpha = progress * 0.5;
+                // Alpha: fades out towards the tail (oldest points) * opacity multiplier
+                const alpha = progress * 0.5 * opacity;
                 this.ctx.strokeStyle = cursor.color + `${alpha})`;
 
                 this.ctx.lineCap = 'round';
@@ -186,8 +217,8 @@ export class CursorsComponent {
         // 1. Coma (Outer soft glow)
         const comaRadius = 16;
         const grad = this.ctx.createRadialGradient(cursor.x, cursor.y, 1, cursor.x, cursor.y, comaRadius);
-        grad.addColorStop(0, cursor.color + '0.7)');
-        grad.addColorStop(0.3, cursor.color + '0.3)');
+        grad.addColorStop(0, cursor.color + `${0.7 * opacity})`);
+        grad.addColorStop(0.3, cursor.color + `${0.3 * opacity})`);
         grad.addColorStop(1, cursor.color + '0)');
 
         this.ctx.beginPath();
@@ -198,15 +229,15 @@ export class CursorsComponent {
         // 2. Nucleus (Bright hot white core)
         this.ctx.beginPath();
         this.ctx.arc(cursor.x, cursor.y, 3, 0, Math.PI * 2);
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.shadowColor = cursor.color + '1)';
+        this.ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        this.ctx.shadowColor = cursor.color + `${opacity})`;
         this.ctx.shadowBlur = 10;
         this.ctx.fill();
         this.ctx.shadowBlur = 0; // Reset shadow
 
-        // Age the trail and filter out old points (longer trail for comet effect)
+        // Age the trail and filter out old points (shorter trail for mobile performance)
         cursor.trail.forEach(pt => pt.age++);
-        cursor.trail = cursor.trail.filter(pt => pt.age < 25);
+        cursor.trail = cursor.trail.filter(pt => pt.age < 15);
     }
 
     startDrawLoop() {
@@ -217,11 +248,15 @@ export class CursorsComponent {
 
             let active = false;
 
-            // Draw local cursor trail if it has moved
+            // Fade local cursor opacity if touch is released
+            if (!this.touchActive && this.myCursor.opacity > 0) {
+                this.myCursor.opacity = Math.max(0, this.myCursor.opacity - 0.08);
+            }
+
+            // Draw local cursor trail if active or fading out
             if (this.hasMoved) {
-                this.drawCursor(this.myCursor);
-                const dist = Math.hypot(this.myCursor.targetX - this.myCursor.x, this.myCursor.targetY - this.myCursor.y);
-                if (this.myCursor.trail.length > 0 || dist > 0.5) {
+                if (this.touchActive || this.myCursor.opacity > 0 || this.myCursor.trail.length > 0) {
+                    this.drawCursor(this.myCursor);
                     active = true;
                 }
             }

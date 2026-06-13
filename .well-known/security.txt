@@ -1,0 +1,4 @@
+Contact: mailto:nyanko@dencat.dev
+Expires: 2027-06-14T08:30:00+09:00
+Preferred-Languages: ja, en
+Canonical: https://dencat.dev/.well-known/security.txt

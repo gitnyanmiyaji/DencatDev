@@ -22,7 +22,20 @@ export class WebSocketManager {
                     const data = JSON.parse(event.data);
                     if (data.type === 'init') {
                         this.editor.grid = data.grid.split('').map(Number);
-                        this.editor.palette = data.palette;
+                        
+                        if (data.isNew) {
+                            // Room is brand new: send current local palette (sampled or saved) to server
+                            this.editor.ws.send(JSON.stringify({
+                                type: 'palette',
+                                palette: this.editor.palette
+                            }));
+                        } else {
+                            // Room exists: sync local palette to server palette
+                            this.editor.palette = data.palette;
+                            const paletteKey = `dencat_pixel_palette_month_${this.editor.month}`;
+                            localStorage.setItem(paletteKey, this.editor.palette.join(','));
+                        }
+                        
                         this.editor.renderPaletteUI();
                         this.editor.drawCanvas();
                         this.editor.updateFavicon();

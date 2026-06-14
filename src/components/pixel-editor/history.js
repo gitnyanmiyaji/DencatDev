@@ -16,22 +16,28 @@ export class HistoryManager {
     undo() {
         if (this.editor.history.length === 0) return;
         const previousState = this.editor.history.pop();
-        this.editor.grid = previousState.grid;
+        
+        const diffs = [];
+        for (let i = 0; i < 1024; i++) {
+            if (this.editor.grid[i] !== previousState.grid[i]) {
+                const x = i % 32;
+                const y = Math.floor(i / 32);
+                diffs.push({
+                    x,
+                    y,
+                    colorIndex: previousState.grid[i]
+                });
+                this.editor.grid[i] = previousState.grid[i];
+            }
+        }
         
         // Update UI
         this.editor.drawCanvas();
         this.editor.updateFavicon();
         
-        // Save to local storage
-        const localKey = `dencat_pixel_grid_month_${this.editor.month}`;
-        localStorage.setItem(localKey, this.editor.grid.join(''));
-        
-        // Broadcast updates if websocket is open
-        if (this.editor.ws && this.editor.ws.readyState === WebSocket.OPEN) {
-            this.editor.ws.send(JSON.stringify({
-                type: 'undo',
-                grid: this.editor.grid.join('')
-            }));
+        if (diffs.length > 0) {
+            this.editor.pendingDiffs.push(...diffs);
+            this.editor.queueBatchSend();
         }
     }
 }

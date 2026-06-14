@@ -22,6 +22,8 @@ export class PixelEditorComponent {
         this.history = []; // History stack for Ctrl+Z undo
         this.version = '0.1';
         this.paletteHistory = []; // Separate stack for palette undos
+        this.pendingDiffs = [];
+        this.batchTimeout = null;
         
         // Sub-managers
         this.historyManager = new HistoryManager(this);
@@ -415,14 +417,29 @@ export class PixelEditorComponent {
         this.drawCanvas();
         this.updateFavicon();
         
+        this.pendingDiffs.push({ x, y, colorIndex: this.selectedColorIndex });
+        this.queueBatchSend();
+    }
+
+    queueBatchSend() {
+        if (this.batchTimeout === null) {
+            this.batchTimeout = setTimeout(() => {
+                this.sendPendingDiffs();
+            }, 500);
+        }
+    }
+
+    sendPendingDiffs() {
+        this.batchTimeout = null;
+        if (this.pendingDiffs.length === 0) return;
+
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify({
-                type: 'paint',
-                x,
-                y,
-                colorIndex: this.selectedColorIndex
+                type: 'paint_batch',
+                diffs: [...this.pendingDiffs]
             }));
         }
+        this.pendingDiffs = [];
         this.triggerSave();
     }
 

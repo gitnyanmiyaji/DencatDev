@@ -21,29 +21,40 @@ export class WebSocketManager {
                 try {
                     const data = JSON.parse(event.data);
                     if (data.type === 'init') {
-                        this.editor.grid = data.grid.split('').map(Number);
-                        
                         if (data.isNew) {
-                            // Room is brand new: send current local palette (sampled or saved) to server
+                            // Room is brand new: check if client has a local drawing
+                            const hasLocalDrawing = this.editor.grid.some(val => val !== 0);
                             this.editor.ws.send(JSON.stringify({
-                                type: 'palette',
+                                type: 'palette_init',
+                                grid: hasLocalDrawing ? this.editor.grid.join('') : "0".repeat(1024),
                                 palette: this.editor.palette
                             }));
                         } else {
-                            // Room exists: sync local palette to server palette
+                            // Room exists: sync client grid and palette from server
+                            this.editor.grid = data.grid.split('').map(Number);
                             this.editor.palette = data.palette;
+                            
+                            // Save palette locally
                             const paletteKey = `dencat_pixel_palette_month_${this.editor.month}`;
                             localStorage.setItem(paletteKey, this.editor.palette.join(','));
+                            // Save grid locally
+                            const localKey = `dencat_pixel_grid_month_${this.editor.month}`;
+                            localStorage.setItem(localKey, data.grid);
                         }
                         
                         this.editor.renderPaletteUI();
                         this.editor.drawCanvas();
                         this.editor.updateFavicon();
-                    } else if (data.type === 'paint') {
-                        const idx = data.y * 32 + data.x;
-                        this.editor.grid[idx] = data.colorIndex;
-                        this.editor.drawCanvas();
-                        this.editor.updateFavicon();
+                    } else if (data.type === 'paint_batch') {
+                        const { diffs } = data;
+                        if (Array.isArray(diffs)) {
+                            for (const diff of diffs) {
+                                const idx = diff.y * 32 + diff.x;
+                                this.editor.grid[idx] = diff.colorIndex;
+                            }
+                            this.editor.drawCanvas();
+                            this.editor.updateFavicon();
+                        }
                     } else if (data.type === 'palette') {
                         this.editor.palette = data.palette;
                         this.editor.renderPaletteUI();

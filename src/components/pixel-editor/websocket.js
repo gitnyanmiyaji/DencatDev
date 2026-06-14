@@ -1,6 +1,20 @@
 export class WebSocketManager {
     constructor(editor) {
         this.editor = editor;
+        this.queueAfterConnect = [];
+    }
+
+    ensureConnection(callback) {
+        if (this.editor.ws && this.editor.ws.readyState === WebSocket.OPEN) {
+            callback();
+            return;
+        }
+        
+        this.queueAfterConnect.push(callback);
+        
+        if (!this.editor.ws || this.editor.ws.readyState === WebSocket.CLOSED || this.editor.ws.readyState === WebSocket.CLOSING) {
+            this.connect();
+        }
     }
 
     connect() {
@@ -45,6 +59,12 @@ export class WebSocketManager {
                         this.editor.renderPaletteUI();
                         this.editor.drawCanvas();
                         this.editor.updateFavicon();
+
+                        // Execute queued actions after successful sync
+                        while (this.queueAfterConnect.length > 0) {
+                            const cb = this.queueAfterConnect.shift();
+                            try { cb(); } catch (err) { console.error("Error in connection queue callback:", err); }
+                        }
                     } else if (data.type === 'paint_batch') {
                         const { diffs } = data;
                         if (Array.isArray(diffs)) {

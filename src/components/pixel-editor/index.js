@@ -343,12 +343,12 @@ export class PixelEditorComponent {
         this.drawCanvas();
         this.updateFavicon();
         
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.webSocket.ensureConnection(() => {
             this.ws.send(JSON.stringify({
                 type: 'palette',
                 palette: this.palette
             }));
-        }
+        });
         this.triggerSave();
     }
 
@@ -366,12 +366,12 @@ export class PixelEditorComponent {
         const paletteKey = `dencat_pixel_palette_month_${this.month}`;
         localStorage.setItem(paletteKey, this.palette.join(','));
         
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.webSocket.ensureConnection(() => {
             this.ws.send(JSON.stringify({
                 type: 'palette',
                 palette: this.palette
             }));
-        }
+        });
         this.triggerSave();
     }
 
@@ -433,14 +433,16 @@ export class PixelEditorComponent {
         this.batchTimeout = null;
         if (this.pendingDiffs.length === 0) return;
 
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify({
-                type: 'paint_batch',
-                diffs: [...this.pendingDiffs]
-            }));
-        }
+        const diffsToSend = [...this.pendingDiffs];
         this.pendingDiffs = [];
         this.triggerSave();
+
+        this.webSocket.ensureConnection(() => {
+            this.ws.send(JSON.stringify({
+                type: 'paint_batch',
+                diffs: diffsToSend
+            }));
+        });
     }
 
     triggerSave() {

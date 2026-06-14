@@ -12,6 +12,7 @@ export class CursorsMobileComponent {
         this.touchActive = false;
         this.isAnimating = false;
         this.animationFrameId = null;
+        this.suspended = false;
     }
 
     render() {
@@ -86,6 +87,7 @@ export class CursorsMobileComponent {
         };
 
         this.ws.onclose = () => {
+            if (this.suspended) return;
             console.log('Mobile Cursors WebSocket disconnected. Reconnecting...');
             this.ws = null;
             if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
@@ -117,8 +119,34 @@ export class CursorsMobileComponent {
         return colors[Math.floor(Math.random() * colors.length)];
     }
 
+    suspend() {
+        this.suspended = true;
+        if (this.ws) {
+            this.ws.close();
+            this.ws = null;
+        }
+        if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+        }
+        this.otherCursors.clear();
+        if (this.canvas) {
+            this.canvas.style.display = 'none';
+        }
+    }
+
+    resume() {
+        if (!this.suspended) return;
+        this.suspended = false;
+        if (this.canvas) {
+            this.canvas.style.display = 'block';
+        }
+        this.connect();
+    }
+
     initTouchListeners() {
         const handleStart = (e) => {
+            if (this.suspended) return;
             if (e.touches.length === 0) return;
             this.touchActive = true;
             this.myCursor.opacity = 1.0;
@@ -136,6 +164,7 @@ export class CursorsMobileComponent {
         };
 
         const handleMove = (e) => {
+            if (this.suspended) return;
             if (e.touches.length === 0) return;
             this.touchActive = true;
             this.myCursor.opacity = 1.0;

@@ -11,6 +11,7 @@ export class CursorsPcComponent {
         this.hasMoved = false;
         this.isAnimating = false;
         this.animationFrameId = null;
+        this.suspended = false;
     }
 
     render() {
@@ -85,6 +86,7 @@ export class CursorsPcComponent {
         };
 
         this.ws.onclose = () => {
+            if (this.suspended) return;
             console.log('Cursors WebSocket disconnected. Reconnecting...');
             this.ws = null;
             if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
@@ -116,8 +118,34 @@ export class CursorsPcComponent {
         return colors[Math.floor(Math.random() * colors.length)];
     }
 
+    suspend() {
+        this.suspended = true;
+        if (this.ws) {
+            this.ws.close();
+            this.ws = null;
+        }
+        if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+        }
+        this.otherCursors.clear();
+        if (this.canvas) {
+            this.canvas.style.display = 'none';
+        }
+    }
+
+    resume() {
+        if (!this.suspended) return;
+        this.suspended = false;
+        if (this.canvas) {
+            this.canvas.style.display = 'block';
+        }
+        this.connect();
+    }
+
     initMouseListener() {
         document.addEventListener('mousemove', (e) => {
+            if (this.suspended) return;
             // Update local cursor targets immediately (unthrottled for smooth local rendering)
             this.myCursor.targetX = e.clientX;
             this.myCursor.targetY = e.clientY;

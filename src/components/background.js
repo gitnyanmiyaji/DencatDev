@@ -13,39 +13,48 @@ export class BackgroundComponent {
         const base = document.createElement('div');
         base.className = 'bg-base';
 
-        const img = document.createElement('div');
-        img.className = 'bg-image';
-        img.id = 'bgImage';
+        this.imgEl = document.createElement('div');
+        this.imgEl.className = 'bg-image';
+        this.imgEl.id = 'bgImage';
 
         const vignette = document.createElement('div');
         vignette.className = 'bg-vignette';
 
-        const effect = document.createElement('div');
-        effect.className = 'bg-effect';
-        effect.id = 'bgEffect';
+        this.effectEl = document.createElement('div');
+        this.effectEl.className = 'bg-effect';
+        this.effectEl.id = 'bgEffect';
 
         // Append to body
         document.body.appendChild(base);
-        document.body.appendChild(img);
+        document.body.appendChild(this.imgEl);
         document.body.appendChild(vignette);
-        document.body.appendChild(effect);
+        document.body.appendChild(this.effectEl);
 
-        this.initSeason(img, effect);
-        this.initParallax(img);
+        const currentMonth = new Date().getMonth() + 1;
+        this.setMonth(currentMonth);
+        this.initParallax(this.imgEl);
     }
 
-    initSeason(imgEl, effectEl) {
-        const month = new Date().getMonth() + 1;
+    setMonth(month) {
+        console.log("📅 BackgroundComponent: setMonth called with", month, typeof month);
         const monthStr = month.toString().padStart(2, '0');
         const effect = this.effectMap[month];
+        console.log("✨ Selected effect:", effect);
         
         const bgImg = new Image();
         const bgUrl = `./assets/month_${monthStr}.webp`;
         bgImg.src = bgUrl;
         bgImg.onload = () => {
-            imgEl.style.backgroundImage = `url('${bgUrl}')`;
-            imgEl.style.opacity = '0.45';
+            console.log("✅ Background image loaded successfully:", bgUrl);
+            this.imgEl.style.backgroundImage = `url('${bgUrl}')`;
+            this.imgEl.style.opacity = '0.45';
         };
+        bgImg.onerror = (e) => {
+            console.error("❌ Background image load failed:", bgUrl, e);
+        };
+        
+        // Clear old particles
+        this.effectEl.innerHTML = '';
         
         const count = effect === 'snow' ? 50 : 30;
         for (let i = 0; i < count; i++) {
@@ -57,7 +66,7 @@ export class BackgroundComponent {
             p.style.top = Math.random() * 100 + '%';
             p.style.animationDuration = Math.random() * 10 + 10 + 's';
             p.style.animationDelay = '-' + Math.random() * 20 + 's';
-            effectEl.appendChild(p);
+            this.effectEl.appendChild(p);
         }
     }
 

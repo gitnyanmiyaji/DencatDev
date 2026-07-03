@@ -24,14 +24,6 @@
     "description": "Modeling Community Onboarding & Git Access"
   },
   {
-    "id": "trivia",
-    "name": "Trivia Silk",
-    "url": "https://trivia-silk.dencat.dev",
-    "path": "/trivia",
-    "category": "private",
-    "description": "Personal AI Assistant & Knowledge Base (Restricted Access)"
-  },
-  {
     "id": "blog",
     "name": "Dev Blog",
     "url": "https://blog.dencat.dev",

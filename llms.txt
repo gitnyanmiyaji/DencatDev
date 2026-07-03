@@ -10,7 +10,6 @@ dencat.dev is the primary public entry point for dencat's self-hosted services a
 - **Home** (Public): [https://dencat.dev](https://dencat.dev) - The Digital Garden Portal
 - **Invite System** (Private): [https://modeling-community.dencat.dev](https://modeling-community.dencat.dev) - Discord Invite Issuance for Modeling Community
 - **Canyon Portal** (Private): [https://gitnyanmiyaji.github.io/canyon-portal/](https://gitnyanmiyaji.github.io/canyon-portal/) - Modeling Community Onboarding & Git Access
-- **Trivia Silk** (Private): [https://trivia-silk.dencat.dev](https://trivia-silk.dencat.dev) - Personal AI Assistant & Knowledge Base (Restricted Access)
 - **Dev Blog** (Public): [https://blog.dencat.dev](https://blog.dencat.dev) - Development Log & Technical Articles
 
 ## About the Owner

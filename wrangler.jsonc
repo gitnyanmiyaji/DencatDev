@@ -2,12 +2,21 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "dencatdevpage",
   "compatibility_date": "2026-05-02",
+  // /chat系のみWorker(router.js)経由でzuisetsu-chatbotへ。アセットに一致するパスは従来どおり直接配信される
+  "main": "src/router.js",
   "observability": {
     "enabled": true
   },
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS"
   },
+  "services": [
+    {
+      "binding": "CHATBOT",
+      "service": "zuisetsu-chatbot"
+    }
+  ],
   "compatibility_flags": [
     "nodejs_compat"
   ]

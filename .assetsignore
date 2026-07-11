@@ -1,0 +1,7 @@
+.git
+.wrangler
+.agent
+.assetsignore
+src/router.js
+wrangler.jsonc
+node_modules

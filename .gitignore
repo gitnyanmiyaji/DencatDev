@@ -12,4 +12,4 @@ __pycache__/
 !.env.example
 
 # Hide Documents
-.agent/state/*
+.agent/
